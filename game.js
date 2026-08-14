@@ -19,8 +19,8 @@ function clampOffsetForHeight(cardH) {
 
 function computeCardSize() {
   const cols = 7;
-  const gap = window.innerWidth >= 700 ? 12 : 8;
-  const topbarH = document.getElementById("topbar").offsetHeight || 56;
+  const gap = window.innerWidth >= 700 ? 8 : 5;
+  const topbarH = document.getElementById("topbar").offsetHeight || 64;
 
   const availW = window.innerWidth - gap * 2;
   let cardW = Math.floor((availW - gap * (cols - 1)) / cols);
@@ -41,8 +41,8 @@ function computeCardSize() {
     cardW = cardH / CARD_ASPECT;
   }
 
-  cardW = Math.max(34, Math.floor(cardW));
-  cardH = Math.max(Math.round(34 * CARD_ASPECT), Math.round(cardW * CARD_ASPECT));
+  cardW = Math.max(38, Math.floor(cardW));
+  cardH = Math.max(Math.round(38 * CARD_ASPECT), Math.round(cardW * CARD_ASPECT));
 
   document.documentElement.style.setProperty("--card-w", cardW + "px");
   document.documentElement.style.setProperty("--card-h", cardH + "px");
@@ -687,6 +687,62 @@ function onCardPointerUpForDoubleTap(e) {
   }
 }
 
+/* ---------- Full screen ---------- */
+
+function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+
+function requestFullscreen() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn) return;
+  try {
+    const p = fn.call(el);
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch (e) {}
+}
+
+function exitFullscreenIfActive() {
+  if (!isFullscreen()) return;
+  const fn = document.exitFullscreen || document.webkitExitFullscreen;
+  if (!fn) return;
+  try {
+    const p = fn.call(document);
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch (e) {}
+}
+
+function setupFullscreen() {
+  const btn = document.getElementById("fullscreenBtn");
+  const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  if (!supported) {
+    btn.style.display = "none";
+    return;
+  }
+
+  const updateLabel = () => {
+    btn.textContent = isFullscreen() ? "⛶ Exit Full Screen" : "⛶ Full Screen";
+  };
+  btn.addEventListener("click", () => {
+    if (isFullscreen()) exitFullscreenIfActive();
+    else requestFullscreen();
+  });
+  document.addEventListener("fullscreenchange", updateLabel);
+  document.addEventListener("webkitfullscreenchange", updateLabel);
+  updateLabel();
+
+  // Browsers only allow entering full screen from within a real user
+  // gesture, so best-effort: try it on the very first tap anywhere.
+  document.addEventListener(
+    "pointerdown",
+    () => {
+      if (!isFullscreen()) requestFullscreen();
+    },
+    { once: true }
+  );
+}
+
 /* ============================== Wiring ============================== */
 
 function init() {
@@ -715,6 +771,8 @@ function init() {
   });
 
   document.getElementById("autoFinishBtn").addEventListener("click", autoFinish);
+
+  setupFullscreen();
 
   const seg = document.getElementById("drawModeSeg");
   seg.querySelectorAll("button").forEach((btn) => {
