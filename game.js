@@ -171,6 +171,7 @@ function pushHistory() {
 
 function undo() {
   if (!history.length) return;
+  const prevRects = captureRects();
   const snap = JSON.parse(history.pop());
   state.tableau = snap.tableau;
   state.stock = snap.stock;
@@ -178,12 +179,14 @@ function undo() {
   state.foundations = snap.foundations;
   state.moves = snap.moves;
   render();
+  animateFromRects(prevRects);
 }
 
 /* ============================== Moves ============================== */
 
 function drawFromStock() {
   pushHistory();
+  const prevRects = captureRects();
   if (state.stock.length === 0) {
     if (state.waste.length === 0) { history.pop(); return; }
     while (state.waste.length) {
@@ -192,15 +195,21 @@ function drawFromStock() {
       state.stock.push(c);
     }
   } else {
+    // Seed the newly-drawn cards' "previous" position as the stock pile
+    // itself, so they visibly slide out of the stock into the waste.
+    const stockEl = document.querySelector('#stockPile .card[data-id="__stock__"]');
+    const stockRect = stockEl ? stockEl.getBoundingClientRect() : null;
     const n = Math.min(drawMode, state.stock.length);
     for (let i = 0; i < n; i++) {
       const c = state.stock.pop();
       c.faceUp = true;
       state.waste.push(c);
+      if (stockRect) prevRects.set(c.id, stockRect);
     }
   }
   state.moves++;
   render();
+  animateFromRects(prevRects);
 }
 
 function locateCard(cardId) {
@@ -260,8 +269,11 @@ function canDropRunOnFoundation(run, suit) {
 }
 
 /** Attempt to move the run identified by cardId to the given target.
- *  target = {type:'tableau', index} | {type:'foundation', index: suit} */
-function tryMove(cardId, target) {
+ *  target = {type:'tableau', index} | {type:'foundation', index: suit}
+ *  opts.animate (default true) slides the card into place; pass false when
+ *  the move already has its own animation (e.g. a drag-and-drop drop). */
+function tryMove(cardId, target, opts = {}) {
+  const animate = opts.animate !== false;
   const loc = locateCard(cardId);
   if (!loc) return false;
   const run = getDraggableRun(loc);
@@ -278,6 +290,8 @@ function tryMove(cardId, target) {
   // no-op guard: dropping onto the pile it's already the tail of
   if (loc.type === "tableau" && target.type === "tableau" && loc.index === target.index) return false;
 
+  const prevRects = animate ? captureRects() : null;
+
   pushHistory();
   removeRun(loc, run);
   if (target.type === "tableau") {
@@ -287,6 +301,7 @@ function tryMove(cardId, target) {
   }
   state.moves++;
   render();
+  if (prevRects) animateFromRects(prevRects);
   checkWin();
   return true;
 }
@@ -345,22 +360,26 @@ function autoFinishStep() {
     if (!pile.length) continue;
     const top = pile[pile.length - 1];
     if (canStackFoundation(top, top.suit)) {
+      const prevRects = captureRects();
       pushHistory();
       pile.pop();
       state.foundations[top.suit].push(top);
       state.moves++;
       render();
+      animateFromRects(prevRects);
       return true;
     }
   }
   if (state.waste.length) {
     const top = state.waste[state.waste.length - 1];
     if (canStackFoundation(top, top.suit)) {
+      const prevRects = captureRects();
       pushHistory();
       state.waste.pop();
       state.foundations[top.suit].push(top);
       state.moves++;
       render();
+      animateFromRects(prevRects);
       return true;
     }
   }
@@ -371,7 +390,7 @@ function autoFinish() {
   const step = () => {
     if (autoFinishStep()) {
       checkWin();
-      setTimeout(step, 90);
+      setTimeout(step, 140);
     }
   };
   step();
@@ -486,6 +505,51 @@ function render() {
 
   document.getElementById("movesVal").textContent = state.moves;
   updateAutoFinishVisibility();
+}
+
+/* ---------- Slide animation (FLIP) ----------
+   render() always rebuilds the board from scratch, so to make a move look
+   like a slide rather than a jump: snapshot every card's on-screen position
+   before the state change, let render() rebuild at the new positions, then
+   nudge each card back to its old spot with a transform and let it
+   transition to zero, which reads as a smooth slide into place. */
+
+function captureRects() {
+  const rects = new Map();
+  document.querySelectorAll(".card[data-id]").forEach((el) => {
+    const id = el.dataset.id;
+    if (id === "__stock__") return;
+    rects.set(id, el.getBoundingClientRect());
+  });
+  return rects;
+}
+
+function animateFromRects(prevRects) {
+  const toAnimate = [];
+  document.querySelectorAll(".card[data-id]").forEach((el) => {
+    const id = el.dataset.id;
+    if (id === "__stock__") return;
+    const prev = prevRects.get(id);
+    if (!prev) return;
+    const next = el.getBoundingClientRect();
+    const dx = prev.left - next.left;
+    const dy = prev.top - next.top;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+    el.style.transition = "none";
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    toAnimate.push(el);
+  });
+  if (!toAnimate.length) return;
+  void document.body.offsetHeight; // force reflow so the start position takes effect
+  requestAnimationFrame(() => {
+    toAnimate.forEach((el) => {
+      el.style.transition = "transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)";
+      el.style.transform = "";
+    });
+    setTimeout(() => {
+      toAnimate.forEach((el) => { el.style.transition = ""; });
+    }, 260);
+  });
 }
 
 /* ============================== Input ============================== */
@@ -618,7 +682,9 @@ function onPointerUp(e) {
   }
 
   if (pileTarget && (pileTarget.type === "tableau" || pileTarget.type === "foundation")) {
-    tryMove(ds.cardId, pileTarget);
+    // The drag itself already animated the card to this spot, so skip the
+    // extra slide here - it would otherwise jump back to the origin first.
+    tryMove(ds.cardId, pileTarget, { animate: false });
   } else {
     render();
   }
