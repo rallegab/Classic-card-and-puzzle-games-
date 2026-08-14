@@ -486,30 +486,9 @@ function render() {
 
   document.getElementById("movesVal").textContent = state.moves;
   updateAutoFinishVisibility();
-  applySelectionHighlight();
 }
 
-/* ============================== Selection & Input ============================== */
-
-let selected = null; // {cardId}
-
-function clearSelection() {
-  selected = null;
-  applySelectionHighlight();
-}
-
-function applySelectionHighlight() {
-  document.querySelectorAll(".card.selected").forEach((c) => c.classList.remove("selected"));
-  if (!selected) return;
-  const loc = locateCard(selected.cardId);
-  if (!loc) { selected = null; return; }
-  const run = getDraggableRun(loc);
-  if (!run) { selected = null; return; }
-  run.forEach((c) => {
-    const el = document.querySelector(`.card[data-id="${cssEscape(c.id)}"]`);
-    if (el) el.classList.add("selected");
-  });
-}
+/* ============================== Input ============================== */
 
 function cssEscape(s) {
   return s.replace(/[^a-zA-Z0-9_-]/g, "\\$&");
@@ -526,43 +505,26 @@ function pileFromElement(el) {
   return null;
 }
 
-function handlePileTap(pileTarget) {
-  if (!selected) return;
-  const cardId = selected.cardId;
-  if (pileTarget.type === "tableau" || pileTarget.type === "foundation") {
-    tryMove(cardId, pileTarget);
-  }
-  clearSelection();
+function shakeCard(cardId) {
+  const el = document.querySelector(`.card[data-id="${cssEscape(cardId)}"]`);
+  if (!el) return;
+  el.classList.remove("shake");
+  void el.offsetWidth; // restart the animation if it's already running
+  el.classList.add("shake");
+  el.addEventListener("animationend", () => el.classList.remove("shake"), { once: true });
 }
 
+// A tap on a card tries to send it straight to wherever it belongs
+// (foundation first, then any legal tableau pile). Dragging still lets you
+// choose the destination by hand.
 function handleCardTap(cardId) {
   const loc = locateCard(cardId);
   if (!loc) return;
 
   if (loc.type === "stock") { drawFromStock(); return; }
 
-  if (selected && selected.cardId === cardId) { clearSelection(); return; }
-
-  if (selected) {
-    // try move selected -> this card's pile
-    let target = null;
-    if (loc.type === "tableau") target = { type: "tableau", index: loc.index };
-    else if (loc.type === "foundation") target = { type: "foundation", index: loc.index };
-    if (target) {
-      const moved = tryMove(selected.cardId, target);
-      clearSelection();
-      if (moved) return;
-    } else {
-      clearSelection();
-    }
-    // fall through: maybe they intended to select a new card instead
-  }
-
-  const run = getDraggableRun(loc);
-  if (run) {
-    selected = { cardId };
-    applySelectionHighlight();
-  }
+  const moved = tryAutoMoveAnywhere(cardId);
+  if (!moved) shakeCard(cardId);
 }
 
 /* ---------- Pointer-based drag ---------- */
@@ -619,7 +581,6 @@ function onPointerMove(e) {
   if (!dragState.active) {
     if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
     dragState.active = true;
-    clearSelection();
     beginDragVisuals();
   }
   dragState.els.forEach((el, i) => {
@@ -665,25 +626,7 @@ function onPointerUp(e) {
 
 function onBoardClick(e) {
   if (e.target.closest("#stockPile")) { drawFromStock(); return; }
-  if (e.target.closest(".card")) return; // handled by pointer up
-  const pileTarget = pileFromElement(e.target);
-  if (pileTarget) handlePileTap(pileTarget);
-}
-
-/* ---------- Double-tap detection for touch ---------- */
-
-let lastTap = { id: null, time: 0 };
-function onCardPointerUpForDoubleTap(e) {
-  const cardEl = e.target.closest(".card");
-  if (!cardEl || cardEl.dataset.id === "__stock__") return;
-  const now = Date.now();
-  if (lastTap.id === cardEl.dataset.id && now - lastTap.time < 320) {
-    clearSelection();
-    tryAutoMoveAnywhere(cardEl.dataset.id);
-    lastTap = { id: null, time: 0 };
-  } else {
-    lastTap = { id: cardEl.dataset.id, time: now };
-  }
+  // Card taps are handled via pointerup; empty pile slots aren't tap targets.
 }
 
 /* ---------- Full screen ---------- */
@@ -752,10 +695,7 @@ function init() {
   const board = document.getElementById("board");
   board.addEventListener("pointerdown", onPointerDown);
   window.addEventListener("pointermove", onPointerMove);
-  window.addEventListener("pointerup", (e) => {
-    onCardPointerUpForDoubleTap(e);
-    onPointerUp(e);
-  });
+  window.addEventListener("pointerup", onPointerUp);
   board.addEventListener("click", onBoardClick);
 
   document.getElementById("newGameBtn").addEventListener("click", newGame);

@@ -184,15 +184,21 @@ body {
   border: 2px solid #fff;
 }
 
-.card.selected {
-  box-shadow: 0 0 0 3px #ffd54f, 0 4px 10px rgba(0,0,0,0.5);
-  transform: translateY(-4px);
-}
-
 .card.dragging {
   opacity: 0.95;
   box-shadow: 0 8px 18px rgba(0,0,0,0.5);
   z-index: 500;
+}
+
+.card.shake {
+  animation: card-shake 0.4s ease-in-out;
+  z-index: 50;
+}
+@keyframes card-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
 }
 
 .card .corner-rank {
