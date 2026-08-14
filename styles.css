@@ -50,19 +50,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px;
+  padding: 6px 6px;
   background: rgba(0,0,0,0.18);
   flex: 0 0 auto;
-  gap: 6px;
+  gap: 4px;
 }
 
 .icon-btn {
   background: rgba(255,255,255,0.12);
   border: none;
   color: #fff;
-  font-size: 26px;
-  width: 52px;
-  height: 52px;
+  font-size: 32px;
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -74,23 +74,24 @@ body {
 
 .topbar-actions { display: flex; gap: 8px; flex: 0 0 auto; }
 
-.stats { display: flex; gap: 14px; min-width: 0; }
+.stats { display: flex; gap: 10px; min-width: 0; }
 .stat { display: flex; flex-direction: column; align-items: center; font-variant-numeric: tabular-nums; }
-.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75; }
-.stat span#timeVal, .stat span#movesVal { font-size: 20px; font-weight: 700; }
+.stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75; }
+.stat span#timeVal, .stat span#movesVal { font-size: 18px; font-weight: 700; }
 
 @media (min-width: 700px) {
-  .icon-btn { width: 60px; height: 60px; font-size: 30px; }
+  .icon-btn { width: 80px; height: 80px; font-size: 40px; }
   .stat-label { font-size: 13px; }
   .stat span#timeVal, .stat span#movesVal { font-size: 24px; }
 }
 
 /* Short viewports (phones in landscape) are height-constrained, so keep the
-   top bar compact there to leave more room for the cards. */
+   top bar a bit more compact there to leave room for the cards, while still
+   staying noticeably bigger than the default mobile size. */
 @media (max-height: 500px) {
-  #topbar { padding: 4px 8px; gap: 4px; }
-  .icon-btn { width: 40px; height: 40px; font-size: 18px; }
-  .stat-label { font-size: 10px; }
+  #topbar { padding: 3px 6px; gap: 3px; }
+  .icon-btn { width: 54px; height: 54px; font-size: 26px; }
+  .stat-label { font-size: 9px; }
   .stat span#timeVal, .stat span#movesVal { font-size: 15px; }
 }
 
@@ -196,19 +197,19 @@ body {
 
 .card .corner {
   position: absolute;
-  left: 3px;
-  top: 1px;
-  font-size: calc(var(--card-w) * 0.27);
+  left: 2px;
+  top: 0;
+  font-size: calc(var(--card-w) * 0.34);
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1;
   text-align: center;
 }
 
 .card .corner.bottom {
   left: auto;
-  right: 3px;
+  right: 2px;
   top: auto;
-  bottom: 1px;
+  bottom: 0;
   transform: rotate(180deg);
 }
 
@@ -218,7 +219,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--card-w) * 0.5);
+  font-size: calc(var(--card-w) * 0.6);
   opacity: 0.9;
 }
 
@@ -249,15 +250,15 @@ body {
   background: #ffd54f;
   color: #1b1b1b;
   border: none;
-  padding: 16px 28px;
+  padding: 22px 36px;
   border-radius: 999px;
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 700;
   cursor: pointer;
 }
 .pill-btn:active { transform: scale(0.97); }
 
-.wide-btn { display: block; width: 100%; margin: 14px 0; }
+.wide-btn { display: block; width: 100%; margin: 16px 0; }
 
 #autoFinishBtn {
   position: fixed;
@@ -290,36 +291,36 @@ body {
   text-align: center;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
-.panel h2 { margin-top: 0; font-size: 28px; }
+.panel h2 { margin-top: 0; font-size: 32px; }
 
-.help-text { font-size: 17px; line-height: 1.6; opacity: 0.95; text-align: left; }
+.help-text { font-size: 19px; line-height: 1.6; opacity: 0.95; text-align: left; }
 
 .menu-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 18px 0;
-  font-size: 19px;
+  margin: 20px 0;
+  font-size: 22px;
 }
 
 .segmented {
   display: flex;
   background: rgba(255,255,255,0.12);
   border-radius: 999px;
-  padding: 4px;
+  padding: 5px;
 }
 .segmented button {
   border: none;
   background: transparent;
   color: #fff;
-  padding: 10px 18px;
+  padding: 14px 22px;
   border-radius: 999px;
-  font-size: 16px;
+  font-size: 20px;
   cursor: pointer;
 }
 .segmented button.active { background: #ffd54f; color: #1b1b1b; font-weight: 700; }
 
-#winStats { font-size: 18px; }
+#winStats { font-size: 22px; }
 
 .win-panel { animation: pop 0.3s ease-out; }
 @keyframes pop {

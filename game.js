@@ -19,7 +19,7 @@ function clampOffsetForHeight(cardH) {
 
 function computeCardSize() {
   const cols = 7;
-  const gap = window.innerWidth >= 700 ? 8 : 5;
+  const gap = window.innerWidth >= 700 ? 6 : 4;
   const topbarH = document.getElementById("topbar").offsetHeight || 64;
 
   const availW = window.innerWidth - gap * 2;
