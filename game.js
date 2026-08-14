@@ -411,13 +411,17 @@ function cardEl(card, extraClass) {
   el.className = "card " + (card.faceUp ? SUIT_COLOR[card.suit] : "facedown") + (extraClass ? " " + extraClass : "");
   el.dataset.id = card.id;
   if (card.faceUp) {
-    const top = document.createElement("div");
-    top.className = "corner";
-    top.textContent = rankLabel(card.rank);
+    const rank = document.createElement("div");
+    rank.className = "corner-rank";
+    rank.textContent = rankLabel(card.rank);
+    const suit = document.createElement("div");
+    suit.className = "corner-suit";
+    suit.textContent = SUIT_SYMBOL[card.suit];
     const pip = document.createElement("div");
     pip.className = "pip-center";
     pip.textContent = SUIT_SYMBOL[card.suit];
-    el.appendChild(top);
+    el.appendChild(rank);
+    el.appendChild(suit);
     el.appendChild(pip);
   }
   return el;
