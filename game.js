@@ -197,6 +197,7 @@ function undo() {
   state.moves = snap.moves;
   render();
   animateFromRects(prevRects);
+  playUndoSound();
 }
 
 /* ============================== Moves ============================== */
@@ -458,6 +459,13 @@ function playDrawSound() { playTone(440, 0.05, { type: "square", volume: 0.05 })
 function playInvalidSound() { playTone(160, 0.16, { type: "sawtooth", volume: 0.08 }); }
 function playWinSound() {
   [523, 659, 784, 1047].forEach((f, i) => playTone(f, 0.22, { type: "sine", volume: 0.15, delay: i * 0.11 }));
+}
+function playUndoSound() {
+  playTone(500, 0.09, { type: "triangle", volume: 0.1 });
+  playTone(380, 0.11, { type: "triangle", volume: 0.09, delay: 0.06 });
+}
+function playNewGameSound() {
+  [440, 587, 740].forEach((f, i) => playTone(f, 0.13, { type: "sine", volume: 0.12, delay: i * 0.07 }));
 }
 
 /* ============================== Confetti ============================== */
@@ -830,9 +838,27 @@ function init() {
   window.addEventListener("pointerup", onPointerUp);
   board.addEventListener("click", onBoardClick);
 
-  document.getElementById("newGameBtn").addEventListener("click", newGame);
+  document.getElementById("newGameBtn").addEventListener("click", () => {
+    if (state.moves > 0) {
+      document.getElementById("confirmOverlay").classList.remove("hidden");
+    } else {
+      playNewGameSound();
+      newGame();
+    }
+  });
+  document.getElementById("confirmYesBtn").addEventListener("click", () => {
+    document.getElementById("confirmOverlay").classList.add("hidden");
+    playNewGameSound();
+    newGame();
+  });
+  document.getElementById("confirmCancelBtn").addEventListener("click", () => {
+    document.getElementById("confirmOverlay").classList.add("hidden");
+  });
   document.getElementById("undoBtn").addEventListener("click", undo);
-  document.getElementById("playAgainBtn").addEventListener("click", newGame);
+  document.getElementById("playAgainBtn").addEventListener("click", () => {
+    playNewGameSound();
+    newGame();
+  });
 
   document.getElementById("menuBtn").addEventListener("click", () => {
     document.getElementById("menuOverlay").classList.remove("hidden");
