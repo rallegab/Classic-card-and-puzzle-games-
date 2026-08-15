@@ -788,22 +788,11 @@ function exitFullscreenIfActive() {
 
 function setupFullscreen() {
   const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
-  const toggle = document.getElementById("fullscreenToggle");
+  const seg = document.getElementById("fullscreenSeg");
   if (!supported) {
-    toggle.closest(".menu-row").style.display = "none";
+    seg.closest(".menu-row").style.display = "none";
     return;
   }
-
-  toggle.classList.toggle("on", fullscreenPref === "on");
-  toggle.setAttribute("aria-checked", String(fullscreenPref === "on"));
-  toggle.addEventListener("click", () => {
-    fullscreenPref = fullscreenPref === "on" ? "off" : "on";
-    writeSetting("solitaire.fullscreen", fullscreenPref);
-    toggle.classList.toggle("on", fullscreenPref === "on");
-    toggle.setAttribute("aria-checked", String(fullscreenPref === "on"));
-    if (fullscreenPref === "on") requestFullscreen();
-    else exitFullscreenIfActive();
-  });
 
   // Browsers only allow entering full screen from within a real user
   // gesture. Some mobile browsers don't reliably honor it from a bare
@@ -865,6 +854,13 @@ function init() {
     handMode = mode;
     writeSetting("solitaire.hand", mode);
     document.body.classList.toggle("hand-left", mode === "left");
+  });
+
+  wireSegmented("fullscreenSeg", fullscreenPref, (mode) => {
+    fullscreenPref = mode;
+    writeSetting("solitaire.fullscreen", mode);
+    if (mode === "on") requestFullscreen();
+    else exitFullscreenIfActive();
   });
 
   wireSegmented("soundSeg", soundOn ? "on" : "off", (mode) => {
