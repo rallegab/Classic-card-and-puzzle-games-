@@ -255,8 +255,10 @@ function getDraggableRun(loc) {
     return [loc.pile[loc.cardIndex]];
   }
   if (loc.type === "foundation") {
-    // Cards already played to a foundation stay there; not draggable back out.
-    return null;
+    // Only the exposed top card of a foundation can be taken back, same as
+    // real play - the cards underneath it aren't reachable.
+    if (loc.cardIndex !== loc.pile.length - 1) return null;
+    return [loc.pile[loc.cardIndex]];
   }
   // tableau
   const pile = loc.pile;
