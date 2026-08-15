@@ -788,22 +788,32 @@ function exitFullscreenIfActive() {
 
 function setupFullscreen() {
   const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
-  const seg = document.getElementById("fullscreenSeg");
+  const toggle = document.getElementById("fullscreenToggle");
   if (!supported) {
-    seg.closest(".menu-row").style.display = "none";
+    toggle.closest(".menu-row").style.display = "none";
     return;
   }
 
+  toggle.classList.toggle("on", fullscreenPref === "on");
+  toggle.setAttribute("aria-checked", String(fullscreenPref === "on"));
+  toggle.addEventListener("click", () => {
+    fullscreenPref = fullscreenPref === "on" ? "off" : "on";
+    writeSetting("solitaire.fullscreen", fullscreenPref);
+    toggle.classList.toggle("on", fullscreenPref === "on");
+    toggle.setAttribute("aria-checked", String(fullscreenPref === "on"));
+    if (fullscreenPref === "on") requestFullscreen();
+    else exitFullscreenIfActive();
+  });
+
   // Browsers only allow entering full screen from within a real user
-  // gesture, so best-effort: try it on the very first tap anywhere,
-  // unless the player has turned this preference off.
-  document.addEventListener(
-    "pointerdown",
-    () => {
-      if (fullscreenPref === "on" && !isFullscreen()) requestFullscreen();
-    },
-    { once: true }
-  );
+  // gesture. Some mobile browsers don't reliably honor it from a bare
+  // pointerdown, so retry on every click (not just the first) until it
+  // actually takes - this also re-enters full screen if the player leaves
+  // it by some other means (e.g. the system back gesture) while the
+  // preference is still on. Once already full screen this is a no-op.
+  document.addEventListener("click", () => {
+    if (fullscreenPref === "on" && !isFullscreen()) requestFullscreen();
+  });
 }
 
 /* ============================== Wiring ============================== */
@@ -855,13 +865,6 @@ function init() {
     handMode = mode;
     writeSetting("solitaire.hand", mode);
     document.body.classList.toggle("hand-left", mode === "left");
-  });
-
-  wireSegmented("fullscreenSeg", fullscreenPref, (mode) => {
-    fullscreenPref = mode;
-    writeSetting("solitaire.fullscreen", mode);
-    if (mode === "on") requestFullscreen();
-    else exitFullscreenIfActive();
   });
 
   wireSegmented("soundSeg", soundOn ? "on" : "off", (mode) => {
