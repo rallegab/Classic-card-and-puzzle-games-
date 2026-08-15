@@ -42,11 +42,18 @@ body {
 
 /* Photo backgrounds: a dark scrim keeps cards and text just as readable
    as the classic felt, regardless of the photo underneath. */
-body.bg-forest { background-image: linear-gradient(rgba(4,20,10,0.58), rgba(4,20,10,0.68)), url("backgrounds/forest.webp"); }
-body.bg-meadow { background-image: linear-gradient(rgba(10,18,4,0.52), rgba(10,18,4,0.64)), url("backgrounds/meadow.webp"); }
-body.bg-underwater { background-image: linear-gradient(rgba(2,12,22,0.5), rgba(2,12,22,0.64)), url("backgrounds/underwater.webp"); }
-body.bg-city { background-image: linear-gradient(rgba(4,4,14,0.58), rgba(4,4,14,0.7)), url("backgrounds/city.webp"); }
-body.bg-archipelago { background-image: linear-gradient(rgba(4,14,20,0.5), rgba(4,14,20,0.64)), url("backgrounds/archipelago.webp"); }
+body.bg-forest { background-image: linear-gradient(rgba(4,20,10,0.3), rgba(4,20,10,0.4)), url("backgrounds/forest.webp"); }
+body.bg-meadow { background-image: linear-gradient(rgba(10,18,4,0.26), rgba(10,18,4,0.36)), url("backgrounds/meadow.webp"); }
+body.bg-underwater { background-image: linear-gradient(rgba(2,12,22,0.24), rgba(2,12,22,0.34)), url("backgrounds/underwater.webp"); }
+body.bg-city { background-image: linear-gradient(rgba(4,4,14,0.3), rgba(4,4,14,0.42)), url("backgrounds/city.webp"); }
+body.bg-archipelago { background-image: linear-gradient(rgba(4,14,20,0.24), rgba(4,14,20,0.34)), url("backgrounds/archipelago.webp"); }
+
+/* On tall/narrow phones, cover-cropping trims a lot of width off this
+   4:3 photo; bias the crop toward the ocean on the left instead of the
+   houses on the right. */
+@media (orientation: portrait) {
+  body.bg-archipelago { background-position: 25% center; }
+}
 
 #app {
   height: 100vh;
@@ -173,6 +180,14 @@ body.hand-left #topRow, body.hand-left #tableau { flex-direction: row; }
 
 .tableau-pile {
   height: 100%;
+}
+
+/* Photo backgrounds: drop the tableau slots' own dark tint/shadow so the
+   photo shows through clearly down each column, not just in the gaps
+   between cards. Foundation/stock slots keep theirs for contrast. */
+body[class*="bg-"] .tableau-pile {
+  background: transparent;
+  box-shadow: none;
 }
 
 .foundation::before {
