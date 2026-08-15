@@ -24,8 +24,12 @@
       <div class="stat"><span class="stat-label">Moves</span><span id="movesVal">0</span></div>
     </div>
     <div class="topbar-actions">
-      <button id="undoBtn" class="icon-btn" title="Undo" aria-label="Undo">↶</button>
-      <button id="newGameBtn" class="icon-btn" title="New Game" aria-label="New Game">🔄</button>
+      <button id="undoBtn" class="icon-btn" title="Undo" aria-label="Undo">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+      </button>
+      <button id="newGameBtn" class="icon-btn" title="New Game" aria-label="New Game">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 5v6h6v2h-6v6h-2v-6H5v-2h6V5h2z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -68,16 +72,29 @@
           <button data-mode="3">3 cards</button>
         </div>
       </div>
-      <button id="fullscreenBtn" class="pill-btn wide-btn">⛶ Full Screen</button>
       <div class="menu-row">
-        <span>How to play</span>
+        <span>Hand</span>
+        <div class="segmented" id="handModeSeg">
+          <button data-mode="right" class="active">Right</button>
+          <button data-mode="left">Left</button>
+        </div>
+      </div>
+      <div class="menu-row">
+        <span>Full Screen</span>
+        <div class="segmented" id="fullscreenSeg">
+          <button data-mode="on" class="active">On</button>
+          <button data-mode="off">Off</button>
+        </div>
+      </div>
+      <div class="menu-row">
+        <span>Sound</span>
+        <div class="segmented" id="soundSeg">
+          <button data-mode="off" class="active">Off</button>
+          <button data-mode="on">On</button>
+        </div>
       </div>
       <p class="help-text">
-        Tap a card and it moves itself to wherever it belongs. If nothing
-        fits, it gives a little shake to let you know. You can also drag a
-        card with your finger to place it yourself. Build piles down in
-        alternating colors, and stack all four suits in order from Ace to
-        King to win.
+        Tap a card to send it home, or drag it yourself.
       </p>
       <button id="closeMenuBtn" class="pill-btn">Close</button>
     </div>

@@ -82,6 +82,7 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.35), inset 0 1px 4px rgba(0,0,0,0.25);
   transform: scale(0.96);
 }
+.icon-btn svg { width: 0.62em; height: 0.62em; display: block; }
 
 .topbar-actions { display: flex; gap: 8px; flex: 0 0 auto; }
 
@@ -135,6 +136,11 @@ body {
   justify-content: space-between;
   min-height: 0;
 }
+
+/* Right-handed (default): stock/waste sit on the right, within thumb reach
+   for one-handed phone play. Left-handed mode mirrors it back. */
+#topRow, #tableau { flex-direction: row-reverse; }
+body.hand-left #topRow, body.hand-left #tableau { flex-direction: row; }
 
 .pile-slot {
   width: var(--card-w);
@@ -337,6 +343,8 @@ body {
   padding: 28px;
   max-width: 420px;
   width: 100%;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   text-align: center;
   box-shadow:
     0 20px 50px rgba(0,0,0,0.55),

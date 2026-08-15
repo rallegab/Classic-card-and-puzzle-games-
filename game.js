@@ -68,6 +68,23 @@ function readStoredDrawMode() {
   }
 }
 let drawMode = readStoredDrawMode();
+
+function readSetting(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+function writeSetting(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+
+let handMode = readSetting("solitaire.hand", "right");
+let fullscreenPref = readSetting("solitaire.fullscreen", "on");
+let soundOn = readSetting("solitaire.sound", "off") === "on";
+
 let timerInterval = null;
 let startTime = null;
 let elapsedFrozen = 0;
@@ -206,6 +223,7 @@ function drawFromStock() {
       state.waste.push(c);
       if (stockRect) prevRects.set(c.id, stockRect);
     }
+    playDrawSound();
   }
   state.moves++;
   render();
@@ -302,6 +320,7 @@ function tryMove(cardId, target, opts = {}) {
   state.moves++;
   render();
   if (prevRects) animateFromRects(prevRects);
+  if (target.type === "foundation") playFoundationSound(); else playMoveSound();
   checkWin();
   return true;
 }
@@ -340,6 +359,7 @@ function checkWin() {
       `Solved in ${state.moves} moves and ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}.`;
     document.getElementById("winOverlay").classList.remove("hidden");
     launchConfetti();
+    playWinSound();
   }
 }
 
@@ -367,6 +387,7 @@ function autoFinishStep() {
       state.moves++;
       render();
       animateFromRects(prevRects);
+      playFoundationSound();
       return true;
     }
   }
@@ -380,6 +401,7 @@ function autoFinishStep() {
       state.moves++;
       render();
       animateFromRects(prevRects);
+      playFoundationSound();
       return true;
     }
   }
@@ -394,6 +416,48 @@ function autoFinish() {
     }
   };
   step();
+}
+
+/* ============================== Sound ============================== */
+
+let audioCtx = null;
+function getAudioCtx() {
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  if (!Ctor) return null;
+  if (!audioCtx) audioCtx = new Ctor();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  return audioCtx;
+}
+
+function playTone(freq, duration, opts = {}) {
+  if (!soundOn) return;
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = opts.type || "sine";
+    osc.frequency.value = freq;
+    const vol = opts.volume || 0.14;
+    const t0 = ctx.currentTime + (opts.delay || 0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.02);
+  } catch (e) {}
+}
+
+function playMoveSound() { playTone(520, 0.09, { type: "triangle", volume: 0.1 }); }
+function playFoundationSound() {
+  playTone(784, 0.1, { type: "sine", volume: 0.14 });
+  playTone(1047, 0.14, { type: "sine", volume: 0.11, delay: 0.05 });
+}
+function playDrawSound() { playTone(440, 0.05, { type: "square", volume: 0.05 }); }
+function playInvalidSound() { playTone(160, 0.16, { type: "sawtooth", volume: 0.08 }); }
+function playWinSound() {
+  [523, 659, 784, 1047].forEach((f, i) => playTone(f, 0.22, { type: "sine", volume: 0.15, delay: i * 0.11 }));
 }
 
 /* ============================== Confetti ============================== */
@@ -576,6 +640,7 @@ function shakeCard(cardId) {
   void el.offsetWidth; // restart the animation if it's already running
   el.classList.add("shake");
   el.addEventListener("animationend", () => el.classList.remove("shake"), { once: true });
+  playInvalidSound();
 }
 
 // A tap on a card tries to send it straight to wherever it belongs
@@ -722,30 +787,20 @@ function exitFullscreenIfActive() {
 }
 
 function setupFullscreen() {
-  const btn = document.getElementById("fullscreenBtn");
   const supported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  const seg = document.getElementById("fullscreenSeg");
   if (!supported) {
-    btn.style.display = "none";
+    seg.closest(".menu-row").style.display = "none";
     return;
   }
 
-  const updateLabel = () => {
-    btn.textContent = isFullscreen() ? "⛶ Exit Full Screen" : "⛶ Full Screen";
-  };
-  btn.addEventListener("click", () => {
-    if (isFullscreen()) exitFullscreenIfActive();
-    else requestFullscreen();
-  });
-  document.addEventListener("fullscreenchange", updateLabel);
-  document.addEventListener("webkitfullscreenchange", updateLabel);
-  updateLabel();
-
   // Browsers only allow entering full screen from within a real user
-  // gesture, so best-effort: try it on the very first tap anywhere.
+  // gesture, so best-effort: try it on the very first tap anywhere,
+  // unless the player has turned this preference off.
   document.addEventListener(
     "pointerdown",
     () => {
-      if (!isFullscreen()) requestFullscreen();
+      if (fullscreenPref === "on" && !isFullscreen()) requestFullscreen();
     },
     { once: true }
   );
@@ -753,7 +808,19 @@ function setupFullscreen() {
 
 /* ============================== Wiring ============================== */
 
+function wireSegmented(id, current, onSelect) {
+  const seg = document.getElementById(id);
+  seg.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      seg.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+      onSelect(btn.dataset.mode);
+    });
+    btn.classList.toggle("active", btn.dataset.mode === current);
+  });
+}
+
 function init() {
+  document.body.classList.toggle("hand-left", handMode === "left");
   computeCardSize();
   window.addEventListener("resize", onViewportResize);
   window.addEventListener("orientationchange", onViewportResize);
@@ -779,15 +846,28 @@ function init() {
 
   setupFullscreen();
 
-  const seg = document.getElementById("drawModeSeg");
-  seg.querySelectorAll("button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      drawMode = Number(btn.dataset.mode);
-      try { localStorage.setItem("solitaire.drawMode", String(drawMode)); } catch (e) {}
-      seg.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-    });
-    if (Number(btn.dataset.mode) === drawMode) btn.classList.add("active");
-    else btn.classList.remove("active");
+  wireSegmented("drawModeSeg", String(drawMode), (mode) => {
+    drawMode = Number(mode);
+    writeSetting("solitaire.drawMode", String(drawMode));
+  });
+
+  wireSegmented("handModeSeg", handMode, (mode) => {
+    handMode = mode;
+    writeSetting("solitaire.hand", mode);
+    document.body.classList.toggle("hand-left", mode === "left");
+  });
+
+  wireSegmented("fullscreenSeg", fullscreenPref, (mode) => {
+    fullscreenPref = mode;
+    writeSetting("solitaire.fullscreen", mode);
+    if (mode === "on") requestFullscreen();
+    else exitFullscreenIfActive();
+  });
+
+  wireSegmented("soundSeg", soundOn ? "on" : "off", (mode) => {
+    soundOn = mode === "on";
+    writeSetting("solitaire.sound", mode);
+    if (soundOn) playMoveSound();
   });
 
   if ("serviceWorker" in navigator) {
