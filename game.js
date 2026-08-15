@@ -84,6 +84,7 @@ function writeSetting(key, value) {
 let handMode = readSetting("solitaire.hand", "right");
 let fullscreenPref = readSetting("solitaire.fullscreen", "on");
 let soundOn = readSetting("solitaire.sound", "off") === "on";
+let background = readSetting("solitaire.background", "classic");
 
 let timerInterval = null;
 let startTime = null;
@@ -828,8 +829,16 @@ function wireSegmented(id, current, onSelect) {
   });
 }
 
+function applyBackground(name) {
+  Array.from(document.body.classList)
+    .filter((c) => c.startsWith("bg-"))
+    .forEach((c) => document.body.classList.remove(c));
+  if (name !== "classic") document.body.classList.add("bg-" + name);
+}
+
 function init() {
   document.body.classList.toggle("hand-left", handMode === "left");
+  applyBackground(background);
   computeCardSize();
   window.addEventListener("resize", onViewportResize);
   window.addEventListener("orientationchange", onViewportResize);
@@ -895,6 +904,17 @@ function init() {
     soundOn = mode === "on";
     writeSetting("solitaire.sound", mode);
     if (soundOn) playMoveSound();
+  });
+
+  const bgGrid = document.getElementById("bgGrid");
+  bgGrid.querySelectorAll(".bg-swatch").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      background = btn.dataset.bg;
+      writeSetting("solitaire.background", background);
+      bgGrid.querySelectorAll(".bg-swatch").forEach((b) => b.classList.toggle("active", b === btn));
+      applyBackground(background);
+    });
+    btn.classList.toggle("active", btn.dataset.bg === background);
   });
 
   if ("serviceWorker" in navigator) {

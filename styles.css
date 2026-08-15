@@ -35,7 +35,18 @@ body {
   color: #fff;
   user-select: none;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
+
+/* Photo backgrounds: a dark scrim keeps cards and text just as readable
+   as the classic felt, regardless of the photo underneath. */
+body.bg-forest { background-image: linear-gradient(rgba(4,20,10,0.58), rgba(4,20,10,0.68)), url("backgrounds/forest.webp"); }
+body.bg-meadow { background-image: linear-gradient(rgba(10,18,4,0.52), rgba(10,18,4,0.64)), url("backgrounds/meadow.webp"); }
+body.bg-underwater { background-image: linear-gradient(rgba(2,12,22,0.5), rgba(2,12,22,0.64)), url("backgrounds/underwater.webp"); }
+body.bg-city { background-image: linear-gradient(rgba(4,4,14,0.58), rgba(4,4,14,0.7)), url("backgrounds/city.webp"); }
+body.bg-archipelago { background-image: linear-gradient(rgba(4,14,20,0.5), rgba(4,14,20,0.64)), url("backgrounds/archipelago.webp"); }
 
 #app {
   height: 100vh;
@@ -385,6 +396,50 @@ body.hand-left #topRow, body.hand-left #tableau { flex-direction: row; }
   justify-content: space-between;
   margin: 20px 0;
   font-size: 22px;
+}
+
+.menu-block {
+  margin: 20px 0;
+  font-size: 22px;
+  text-align: left;
+}
+.menu-block > span { display: block; margin-bottom: 10px; }
+
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.bg-swatch {
+  border: 3px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.bg-swatch.active { border-color: #ffd54f; box-shadow: 0 0 0 2px rgba(255,213,79,0.4), 0 2px 8px rgba(0,0,0,0.35); }
+.bg-swatch-preview {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  background: radial-gradient(ellipse at top, var(--felt), var(--felt-dark));
+}
+.bg-swatch-label {
+  display: block;
+  font-size: 13px;
+  color: #fff;
+  padding: 6px 4px;
+  text-align: center;
+  line-height: 1.15;
+}
+
+@media (min-width: 700px) {
+  .bg-swatch-label { font-size: 15px; }
 }
 
 .segmented {

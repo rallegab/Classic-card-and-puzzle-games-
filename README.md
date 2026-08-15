@@ -9,10 +9,13 @@ open the resulting URL on your phone, tablet, or computer.
 ## Features
 
 - Classic Klondike rules, with a Draw 1 / Draw 3 option
-- Works on touch screens: drag cards with your finger, or tap a card and
-  then tap where you want to put it
-- Double-tap a card to send it to its foundation automatically
-- Undo, move counter, timer, and an "Auto Finish" button once you've won
+- Works on touch screens: drag a card with your finger, or tap it to send
+  it home (or to any open spot) automatically
+- Right/left-handed layout, so the stock pile can sit within thumb reach
+- Undo, a New Game confirmation, move counter, timer, an "Auto Finish"
+  button once you've won, and optional sound effects
+- A few photo backgrounds to pick from in the menu, alongside the classic
+  felt table
 - Installable to your phone's home screen for an app-like, full-screen feel
   (open the site in Chrome, then use the browser menu → "Add to Home
   screen")
