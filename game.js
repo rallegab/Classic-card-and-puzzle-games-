@@ -17,6 +17,10 @@ function clampOffsetForHeight(cardH) {
   return Math.max(16, Math.min(28, cardH * 0.28));
 }
 
+// Cached in computeCardSize() so stackOffset() (called every drag frame)
+// doesn't need a getComputedStyle() read on each call.
+let cachedStackOffset = clampOffsetForHeight(88);
+
 function computeCardSize() {
   const cols = 7;
   const gap = window.innerWidth >= 700 ? 6 : 4;
@@ -47,6 +51,7 @@ function computeCardSize() {
   document.documentElement.style.setProperty("--card-w", cardW + "px");
   document.documentElement.style.setProperty("--card-h", cardH + "px");
   document.documentElement.style.setProperty("--gap", gap + "px");
+  cachedStackOffset = clampOffsetForHeight(cardH);
 }
 
 let resizeTimer = null;
@@ -476,6 +481,7 @@ function playNewGameSound() {
 function launchConfetti() {
   const layer = document.getElementById("dragLayer");
   const colors = ["#ffd54f", "#ff6f61", "#4fc3f7", "#81c784", "#ba68c8"];
+  const pieces = [];
   for (let i = 0; i < 60; i++) {
     const el = document.createElement("div");
     el.style.position = "fixed";
@@ -489,13 +495,16 @@ function launchConfetti() {
     el.style.transform = `rotate(${Math.random() * 360}deg)`;
     el.style.transition = `transform 2.2s ease-in, top 2.2s ease-in, opacity 2.2s`;
     layer.appendChild(el);
-    requestAnimationFrame(() => {
+    pieces.push(el);
+  }
+  requestAnimationFrame(() => {
+    pieces.forEach((el) => {
       el.style.top = "110vh";
       el.style.transform = `rotate(${Math.random() * 720}deg)`;
       el.style.opacity = "0.2";
     });
-    setTimeout(() => el.remove(), 2400);
-  }
+  });
+  setTimeout(() => pieces.forEach((el) => el.remove()), 2400);
 }
 
 /* ============================== Rendering ============================== */
@@ -522,8 +531,7 @@ function cardEl(card, extraClass) {
 }
 
 function stackOffset() {
-  const cardH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--card-h"));
-  return Math.max(16, Math.min(28, cardH * 0.28));
+  return cachedStackOffset;
 }
 
 function render() {
@@ -845,8 +853,8 @@ function init() {
 
   const board = document.getElementById("board");
   board.addEventListener("pointerdown", onPointerDown);
-  window.addEventListener("pointermove", onPointerMove);
-  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  window.addEventListener("pointerup", onPointerUp, { passive: true });
   board.addEventListener("click", onBoardClick);
 
   document.getElementById("newGameBtn").addEventListener("click", () => {
