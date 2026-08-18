@@ -1,10 +1,11 @@
-name: Deploy Solitaire to GitHub Pages
+name: Deploy site to GitHub Pages
 
 on:
   push:
     branches:
       - main
       - claude/solitaire-game-browser-zy3fr3
+      - claude/new-mahjong-game-bsol2t
   workflow_dispatch:
 
 permissions:
