@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="36" fill="#7a1f2b"/>
+  <rect x="40" y="30" width="112" height="140" rx="12" fill="#fbf3e0" stroke="#a9793f" stroke-width="6"/>
+  <text x="96" y="98" font-size="64" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" fill="#b3261e" font-weight="bold">中</text>
+  <text x="96" y="148" font-size="30" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" fill="#e0b13c">麻將</text>
+</svg>

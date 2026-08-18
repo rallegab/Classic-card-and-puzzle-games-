@@ -1,0 +1,14 @@
+{
+  "name": "Mahjong Solitaire",
+  "short_name": "Mahjong",
+  "description": "A free, ad-free Mahjong Solitaire game.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2a070c",
+  "theme_color": "#7a1f2b",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
