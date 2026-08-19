@@ -1,0 +1,498 @@
+:root {
+  --felt: #0b6b3a;
+  --felt-dark: #075129;
+  --card-w: 62px;
+  --card-h: 88px;
+  --gap: 5px;
+  --radius: 8px;
+  --red: #c62828;
+  --black: #1b1b1b;
+  color-scheme: light;
+}
+
+@media (min-width: 700px) {
+  :root {
+    --card-w: 84px;
+    --card-h: 118px;
+    --gap: 8px;
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 4px 4px, rgba(255,255,255,0.05) 1px, transparent 1.6px) 0 0/16px 16px,
+    radial-gradient(ellipse at 50% 0%, var(--felt) 0%, var(--felt-dark) 62%, #052c17 100%);
+  color: #fff;
+  user-select: none;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Photo backgrounds: a dark scrim keeps cards and text just as readable
+   as the classic felt, regardless of the photo underneath. */
+body.bg-forest { background-image: linear-gradient(rgba(4,20,10,0.3), rgba(4,20,10,0.4)), url("backgrounds/forest.webp"); }
+body.bg-meadow { background-image: linear-gradient(rgba(10,18,4,0.26), rgba(10,18,4,0.36)), url("backgrounds/meadow.webp"); }
+body.bg-underwater { background-image: linear-gradient(rgba(2,12,22,0.24), rgba(2,12,22,0.34)), url("backgrounds/underwater.webp"); }
+body.bg-city { background-image: linear-gradient(rgba(4,4,14,0.3), rgba(4,4,14,0.42)), url("backgrounds/city.webp"); }
+body.bg-archipelago { background-image: linear-gradient(rgba(4,14,20,0.24), rgba(4,14,20,0.34)), url("backgrounds/archipelago.webp"); }
+
+/* On tall/narrow phones, cover-cropping trims a lot of width off this
+   4:3 photo; bias the crop toward the ocean on the left instead of the
+   houses on the right. */
+@media (orientation: portrait) {
+  body.bg-archipelago { background-position: 25% center; }
+}
+
+#app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Top bar ---------- */
+
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 6px;
+  background: linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.16));
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.06) inset;
+  flex: 0 0 auto;
+  gap: 4px;
+  position: relative;
+  z-index: 10;
+}
+
+.icon-btn {
+  background: linear-gradient(160deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: 32px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+.icon-btn:active {
+  background: linear-gradient(160deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35), inset 0 1px 4px rgba(0,0,0,0.25);
+  transform: scale(0.96);
+}
+.icon-btn svg { display: block; }
+#undoBtn svg { width: 1.28em; height: 1.28em; }
+#newGameBtn svg { width: 1.7em; height: 1.7em; }
+
+.topbar-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+
+.stats { display: flex; gap: 10px; min-width: 0; }
+.stat { display: flex; flex-direction: column; align-items: center; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.8; }
+.stat span#timeVal, .stat span#movesVal { font-size: 27px; font-weight: 700; }
+
+@media (min-width: 700px) {
+  .icon-btn { width: 80px; height: 80px; font-size: 40px; }
+  .stat-label { font-size: 16px; }
+  .stat span#timeVal, .stat span#movesVal { font-size: 34px; }
+}
+
+/* Short viewports (phones in landscape) are height-constrained, so keep the
+   top bar a bit more compact there to leave room for the cards, while still
+   staying noticeably bigger than the default mobile size. */
+@media (max-height: 500px) {
+  #topbar { padding: 3px 6px; gap: 3px; }
+  .icon-btn { width: 54px; height: 54px; font-size: 26px; }
+  .stat-label { font-size: 10px; }
+  .stat span#timeVal, .stat span#movesVal { font-size: 20px; }
+}
+
+/* ---------- Board ---------- */
+
+#board {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gap) * 1.5);
+}
+
+#topRow {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+
+#stockWasteArea, #foundations {
+  display: flex;
+  gap: var(--gap);
+}
+
+#tableau {
+  flex: 1 1 auto;
+  display: flex;
+  gap: var(--gap);
+  justify-content: space-between;
+  min-height: 0;
+}
+
+/* Right-handed (default): stock/waste sit on the right, within thumb reach
+   for one-handed phone play. Left-handed mode mirrors it back. */
+#topRow, #tableau { flex-direction: row-reverse; }
+body.hand-left #topRow, body.hand-left #tableau { flex-direction: row; }
+
+/* The waste pile fans its top 3 cards rightward (see render() in game.js).
+   In right-hand mode that group sits flush against the right screen edge,
+   so a 3-card fan (Draw 3) would run off-screen without this clearance. */
+#stockWasteArea { margin-right: 34px; }
+
+.pile-slot {
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px solid rgba(255,255,255,0.22);
+  border-radius: var(--radius);
+  position: relative;
+  flex: 0 0 var(--card-w);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.08);
+}
+
+.tableau-pile {
+  height: 100%;
+}
+
+/* Photo backgrounds: drop the tableau slots' own dark tint/shadow so the
+   photo shows through clearly down each column, not just in the gaps
+   between cards. Foundation/stock slots keep theirs for contrast. */
+body[class*="bg-"] .tableau-pile {
+  background: transparent;
+  box-shadow: none;
+}
+
+.foundation::before {
+  content: attr(data-suit-symbol);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--card-w) * 0.5);
+  color: rgba(255,255,255,0.22);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+#stockPile::before {
+  content: "↺";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--card-w) * 0.45);
+  color: rgba(255,255,255,0.32);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: calc(var(--radius) * 0.9);
+  background: linear-gradient(160deg, #ffffff 0%, #f4f4f4 100%);
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.15),
+    0 3px 6px rgba(0,0,0,0.25),
+    0 6px 14px rgba(0,0,0,0.18);
+  transition: box-shadow 0.15s, transform 0.15s;
+  touch-action: none;
+  cursor: grab;
+}
+
+.card.facedown {
+  background:
+    repeating-linear-gradient(45deg, #1a4fa0 0, #1a4fa0 4px, #2560c0 4px, #2560c0 8px);
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,0.18),
+    0 1px 1px rgba(0,0,0,0.15),
+    0 3px 6px rgba(0,0,0,0.25),
+    0 6px 14px rgba(0,0,0,0.18);
+}
+
+.card.dragging {
+  opacity: 0.97;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.3),
+    0 14px 28px rgba(0,0,0,0.4);
+  transform: scale(1.04) rotate(-2deg);
+  z-index: 500;
+}
+
+.card.shake {
+  animation: card-shake 0.4s ease-in-out;
+  z-index: 50;
+}
+@keyframes card-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+.card .corner-rank {
+  position: absolute;
+  left: 3px;
+  top: 0;
+  font-size: calc(var(--card-w) * 0.46);
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+
+.card .corner-suit {
+  position: absolute;
+  right: 3px;
+  top: 1px;
+  font-size: calc(var(--card-w) * 0.32);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+
+.card .pip-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--card-w) * 0.8);
+  opacity: 0.92;
+  text-shadow: 0 2px 2px rgba(0,0,0,0.15);
+  transform: translateY(15%);
+}
+
+.card.red { color: var(--red); }
+.card.black { color: var(--black); }
+
+.pile-count-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  font-size: 11px;
+  padding: 1px 6px;
+  pointer-events: none;
+}
+
+#dragLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 900;
+}
+
+/* ---------- Buttons / Overlays ---------- */
+
+.pill-btn {
+  background: linear-gradient(160deg, #ffe184 0%, #ffd54f 45%, #ffc61f 100%);
+  color: #1b1b1b;
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 22px 36px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.2),
+    0 8px 18px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+.pill-btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.2),
+    inset 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.wide-btn { display: block; width: 100%; margin: 16px 0; }
+
+#autoFinishBtn {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+}
+#autoFinishBtn.hidden { display: none; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.overlay.hidden { display: none; }
+
+.panel {
+  background: linear-gradient(165deg, #1a6b3e 0%, #14532d 55%, #0f3f21 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  text-align: center;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.55),
+    0 2px 0 rgba(255,255,255,0.08) inset;
+}
+.panel h2 {
+  margin-top: 0;
+  font-size: 32px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.help-text { font-size: 19px; line-height: 1.6; opacity: 0.95; text-align: left; }
+.confirm-text { text-align: center; }
+
+.confirm-row { display: flex; gap: 12px; margin-top: 22px; }
+.confirm-row .pill-btn { flex: 1; margin: 0; padding-left: 12px; padding-right: 12px; }
+
+.secondary-btn {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 6px rgba(0,0,0,0.25);
+}
+.secondary-btn:active {
+  background: rgba(255,255,255,0.24);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0;
+  font-size: 22px;
+}
+
+.menu-block {
+  margin: 20px 0;
+  font-size: 22px;
+  text-align: left;
+}
+.menu-block > span { display: block; margin-bottom: 10px; }
+
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.bg-swatch {
+  border: 3px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.bg-swatch.active { border-color: #ffd54f; box-shadow: 0 0 0 2px rgba(255,213,79,0.4), 0 2px 8px rgba(0,0,0,0.35); }
+.bg-swatch-preview {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  background: radial-gradient(ellipse at top, var(--felt), var(--felt-dark));
+}
+.bg-swatch-label {
+  display: block;
+  font-size: 13px;
+  color: #fff;
+  padding: 6px 4px;
+  text-align: center;
+  line-height: 1.15;
+}
+
+@media (min-width: 700px) {
+  .bg-swatch-label { font-size: 15px; }
+}
+
+.segmented {
+  display: flex;
+  background: rgba(0,0,0,0.2);
+  border-radius: 999px;
+  padding: 5px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+}
+.segmented button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.segmented button.active {
+  background: linear-gradient(160deg, #ffe184, #ffc61f);
+  color: #1b1b1b;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+#winStats { font-size: 22px; }
+
+.win-panel {
+  animation: pop 0.3s ease-out;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.55),
+    0 2px 0 rgba(255,255,255,0.08) inset,
+    0 0 60px rgba(255,213,79,0.25);
+}
+@keyframes pop {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

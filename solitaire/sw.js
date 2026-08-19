@@ -1,9 +1,9 @@
-const CACHE_NAME = "hub-cache-v1";
+const CACHE_NAME = "solitaire-cache-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./app.js",
+  "./game.js",
   "./manifest.json",
   "./icon.svg",
 ];
@@ -24,10 +24,7 @@ self.addEventListener("activate", (event) => {
 
 // Network-first: always serve the latest deploy when online, so a new
 // version is visible on the very next reload. Only fall back to the cache
-// when the network is unavailable, so the hub still works offline.
-// Scoped to "/" by default, but only ever controls requests from this page
-// itself - /solitaire/ and /mahjong/ are each controlled by their own more
-// specifically-scoped service worker instead.
+// when the network is unavailable, so the game still works offline.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(

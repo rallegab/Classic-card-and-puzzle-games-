@@ -5,7 +5,8 @@ entirely in your browser — no app store, no accounts, no ads, no tracking.
 
 This is a separate, self-contained game living alongside the Solitaire card
 game in this repo; it shares no code or assets with it. Open `index.html`
-here (or `/mahjong/` once the site is deployed) to play.
+here (or `/mahjong/` once the site is deployed) to play, or use the main
+menu at the site root to get to it.
 
 ## Features
 

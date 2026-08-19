@@ -362,6 +362,8 @@ body {
 .pill-btn {
   background: linear-gradient(160deg, #f2d38a 0%, var(--gold) 45%, #c8922a 100%);
   color: #2a1c0a;
+  text-decoration: none;
+  display: inline-block;
   border: 1px solid rgba(0,0,0,0.15);
   padding: 22px 36px;
   border-radius: 999px;
@@ -420,6 +422,8 @@ body {
 
 .confirm-row { display: flex; gap: 12px; margin-top: 22px; }
 .confirm-row .pill-btn { flex: 1; margin: 0; padding-left: 12px; padding-right: 12px; }
+
+.wide-btn { display: block; width: 100%; margin: 16px 0; }
 
 .secondary-btn {
   background: rgba(255,255,255,0.14);

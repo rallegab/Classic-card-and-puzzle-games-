@@ -3,152 +3,51 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<title>Solitaire</title>
-<meta name="description" content="A free, ad-free classic Klondike Solitaire game that plays right in your browser." />
-<meta name="theme-color" content="#0b6b3a" />
+<title>Classic Card &amp; Puzzle Games</title>
+<meta name="description" content="Free, ad-free classic games that play right in your browser: Klondike Solitaire and Mahjong Solitaire." />
+<meta name="theme-color" content="#141024" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="icon.svg" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Solitaire" />
+<meta name="apple-mobile-web-app-title" content="Games" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div id="app">
 
   <header id="topbar">
-    <button id="menuBtn" class="icon-btn" title="Menu" aria-label="Menu">☰</button>
-    <div class="stats">
-      <div class="stat"><span class="stat-label">Time</span><span id="timeVal">0:00</span></div>
-      <div class="stat"><span class="stat-label">Moves</span><span id="movesVal">0</span></div>
-    </div>
-    <div class="topbar-actions">
-      <button id="undoBtn" class="icon-btn" title="Undo" aria-label="Undo">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
-      </button>
-      <button id="newGameBtn" class="icon-btn" title="New Game" aria-label="New Game">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 5v6h6v2h-6v6h-2v-6H5v-2h6V5h2z"/></svg>
-      </button>
-    </div>
+    <h1>Classic Card &amp; Puzzle Games</h1>
+    <p>Free, ad-free, no accounts, no tracking. Pick a game.</p>
   </header>
 
-  <main id="board">
-    <div id="topRow">
-      <div id="stockWasteArea">
-        <div class="pile-slot" id="stockPile" data-pile="stock"></div>
-        <div class="pile-slot" id="wastePile" data-pile="waste"></div>
-      </div>
-      <div id="foundations">
-        <div class="pile-slot foundation" data-pile="foundation" data-suit="S"></div>
-        <div class="pile-slot foundation" data-pile="foundation" data-suit="H"></div>
-        <div class="pile-slot foundation" data-pile="foundation" data-suit="D"></div>
-        <div class="pile-slot foundation" data-pile="foundation" data-suit="C"></div>
-      </div>
-    </div>
+  <main id="gameGrid">
+    <a class="game-card card-solitaire" href="solitaire/">
+      <span class="game-card-glow" aria-hidden="true"></span>
+      <span class="game-card-emblem" aria-hidden="true">
+        <span class="pip pip-spade">♠</span>
+        <span class="pip pip-heart">♥</span>
+      </span>
+      <span class="game-card-body">
+        <span class="game-card-title">Solitaire</span>
+        <span class="game-card-subtitle">Classic Klondike</span>
+      </span>
+    </a>
 
-    <div id="tableau">
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="0"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="1"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="2"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="3"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="4"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="5"></div>
-      <div class="pile-slot tableau-pile" data-pile="tableau" data-index="6"></div>
-    </div>
+    <a class="game-card card-mahjong" href="mahjong/">
+      <span class="game-card-glow" aria-hidden="true"></span>
+      <span class="game-card-emblem" aria-hidden="true">中</span>
+      <span class="game-card-body">
+        <span class="game-card-title">Mahjong</span>
+        <span class="game-card-subtitle">Tile-Matching Solitaire</span>
+      </span>
+    </a>
   </main>
 
-  <button id="autoFinishBtn" class="pill-btn hidden">✨ Auto Finish</button>
-
-  <div id="dragLayer"></div>
-
-  <div id="menuOverlay" class="overlay hidden">
-    <div class="panel">
-      <h2>Solitaire</h2>
-      <div class="menu-row">
-        <span>Draw</span>
-        <div class="segmented" id="drawModeSeg">
-          <button data-mode="1" class="active">1 card</button>
-          <button data-mode="3">3 cards</button>
-        </div>
-      </div>
-      <div class="menu-row">
-        <span>Hand</span>
-        <div class="segmented" id="handModeSeg">
-          <button data-mode="right" class="active">Right</button>
-          <button data-mode="left">Left</button>
-        </div>
-      </div>
-      <div class="menu-row">
-        <span>Full Screen</span>
-        <div class="segmented" id="fullscreenSeg">
-          <button data-mode="on" class="active">On</button>
-          <button data-mode="off">Off</button>
-        </div>
-      </div>
-      <div class="menu-row">
-        <span>Sound</span>
-        <div class="segmented" id="soundSeg">
-          <button data-mode="off" class="active">Off</button>
-          <button data-mode="on">On</button>
-        </div>
-      </div>
-      <div class="menu-block">
-        <span>Background</span>
-        <div class="bg-grid" id="bgGrid">
-          <button class="bg-swatch active" data-bg="classic">
-            <span class="bg-swatch-preview bg-swatch-classic"></span>
-            <span class="bg-swatch-label">Classic</span>
-          </button>
-          <button class="bg-swatch" data-bg="forest">
-            <img class="bg-swatch-preview" src="backgrounds/forest-thumb.webp" alt="" loading="lazy" />
-            <span class="bg-swatch-label">Forest</span>
-          </button>
-          <button class="bg-swatch" data-bg="meadow">
-            <img class="bg-swatch-preview" src="backgrounds/meadow-thumb.webp" alt="" loading="lazy" />
-            <span class="bg-swatch-label">Meadow</span>
-          </button>
-          <button class="bg-swatch" data-bg="underwater">
-            <img class="bg-swatch-preview" src="backgrounds/underwater-thumb.webp" alt="" loading="lazy" />
-            <span class="bg-swatch-label">Underwater</span>
-          </button>
-          <button class="bg-swatch" data-bg="city">
-            <img class="bg-swatch-preview" src="backgrounds/city-thumb.webp" alt="" loading="lazy" />
-            <span class="bg-swatch-label">City</span>
-          </button>
-          <button class="bg-swatch" data-bg="archipelago">
-            <img class="bg-swatch-preview" src="backgrounds/archipelago-thumb.webp" alt="" loading="lazy" />
-            <span class="bg-swatch-label">Archipelago</span>
-          </button>
-        </div>
-      </div>
-      <p class="help-text">
-        Tap a card to send it home, or drag it yourself.
-      </p>
-      <button id="closeMenuBtn" class="pill-btn">Close</button>
-    </div>
-  </div>
-
-  <div id="winOverlay" class="overlay hidden">
-    <div class="panel win-panel">
-      <h2>🎉 You Won! 🎉</h2>
-      <p id="winStats"></p>
-      <button id="playAgainBtn" class="pill-btn">Play Again</button>
-    </div>
-  </div>
-
-  <div id="confirmOverlay" class="overlay hidden">
-    <div class="panel">
-      <h2>New Game?</h2>
-      <p class="help-text confirm-text">Your current game will be lost.</p>
-      <div class="confirm-row">
-        <button id="confirmCancelBtn" class="pill-btn secondary-btn">Cancel</button>
-        <button id="confirmYesBtn" class="pill-btn">Yes, New Game</button>
-      </div>
-    </div>
-  </div>
+  <footer id="footer">Installable, works offline, no ads.</footer>
 
 </div>
-<script src="game.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
